@@ -1,11 +1,6 @@
-import {
-  SignInButton,
-  SignOutButton,
-  UserButton,
-  currentUser,
-} from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
+import { currentUser, UserButton } from "@clerk/nextjs";
 
 export default async function Home() {
   const user = await currentUser();
