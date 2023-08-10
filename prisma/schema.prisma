@@ -5,6 +5,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator zod {
+  provider = "zod-prisma"
+  output   = "../src/lib/validators"
+}
+
 datasource db {
   provider     = "mysql"
   url          = env("DATABASE_URL")
@@ -12,12 +17,39 @@ datasource db {
 }
 
 model Subreddit {
-  id   String @id @default(cuid())
-  name String @unique
+  id   String @id @default(cuid()) /// @zod.cuid()
+  name String @unique /// @zod.min(3).max(21)
 
-  posts Post[]
+  description String /// @zod.max(500)
+  title       String /// @zod.max(50)
 
-  @@index([name])
+  moderators  Moderator[]
+  posts       Post[]
+  subscribers Subscription[]
+}
+
+model Moderator {
+  subredditId String
+  moderatorId String
+
+  head Boolean
+
+  subreddit Subreddit @relation(fields: [subredditId], references: [id], onDelete: Cascade)
+
+  @@id([subredditId, moderatorId])
+  @@index([subredditId])
+  @@index([moderatorId])
+}
+
+model Subscription {
+  subredditId  String
+  subscriberId String
+
+  subreddit Subreddit @relation(fields: [subredditId], references: [id], onDelete: Cascade)
+
+  @@id([subredditId, subscriberId])
+  @@index([subredditId])
+  @@index([subscriberId])
 }
 
 model Post {
@@ -31,5 +63,6 @@ model Post {
 
   subreddit Subreddit @relation(fields: [subredditId], references: [id], onDelete: Cascade)
 
+  @@index([authorId])
   @@index([subredditId])
 }

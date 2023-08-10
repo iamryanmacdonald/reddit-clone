@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ClerkProvider, currentUser, SignOutButton } from "@clerk/nextjs";
 
 import ModeToggle from "~/components/mode-toggle";
-import ThemeProvider from "~/components/theme-provider";
+import Providers from "~/components/providers";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { cn } from "~/lib/utils";
@@ -34,10 +34,8 @@ export default async function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <head />
-        <body
-          className={cn("bg-background font-sans antialiased", inter.className)}
-        >
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <body className={cn("bg-background antialiased", inter.className)}>
+          <Providers attribute="class" defaultTheme="system" enableSystem>
             <div className="h-full flex-col">
               <nav className="fixed left-0 top-0 flex h-12 w-full items-center justify-between bg-background px-8">
                 <span className="text-xl font-semibold">reddit.</span>
@@ -74,7 +72,7 @@ export default async function RootLayout({
               </footer>
             </div>
             {modal}
-          </ThemeProvider>
+          </Providers>
         </body>
       </html>
     </ClerkProvider>
