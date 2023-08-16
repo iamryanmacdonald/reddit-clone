@@ -12,8 +12,8 @@ export async function POST(req: Request) {
 
     if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
+    // Pull inputs from the request
     const body = await req.json();
-    console.log("body", body);
     const data = SubredditModel.omit({ id: true }).parse(body);
 
     // Check if there is a subreddit that exists with the name

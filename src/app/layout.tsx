@@ -12,6 +12,11 @@ import { cn } from "~/lib/utils";
 
 import "./globals.css";
 
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+
 const inter = Inter({
   subsets: ["latin"],
 });
@@ -38,8 +43,16 @@ export default async function RootLayout({
           <Providers attribute="class" defaultTheme="system" enableSystem>
             <div className="h-full flex-col">
               <nav className="fixed left-0 top-0 flex h-12 w-full items-center justify-between bg-background px-8">
-                <span className="text-xl font-semibold">reddit.</span>
-
+                <div className="flex items-center gap-12">
+                  <Link href="/" className="text-xl font-semibold">
+                    reddit.
+                  </Link>
+                  <div className="flex gap-4">
+                    <Button variant="outline" asChild>
+                      <Link href="/subreddits">Subreddits</Link>
+                    </Button>
+                  </div>
+                </div>
                 {user ? (
                   <div className="flex items-center gap-4">
                     <span>Welcome, {user.firstName}</span>
