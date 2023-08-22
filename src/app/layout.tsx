@@ -12,10 +12,16 @@ import { cn } from "~/lib/utils";
 
 import "./globals.css";
 
+import { Subreddit } from "@prisma/client";
+
 import {
   DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { prisma } from "~/lib/db";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,6 +41,22 @@ export default async function RootLayout({
 }) {
   const user = await currentUser();
 
+  let subreddits: Subreddit[] = [];
+
+  if (user) {
+    subreddits = await prisma.subreddit.findMany({
+      orderBy: [{ name: "asc" }],
+      take: 10,
+      where: {
+        subscribers: {
+          some: {
+            subscriberId: user.id,
+          },
+        },
+      },
+    });
+  }
+
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
@@ -47,10 +69,49 @@ export default async function RootLayout({
                   <Link href="/" className="text-xl font-semibold">
                     reddit.
                   </Link>
-                  <div className="flex gap-4">
-                    <Button variant="outline" asChild>
-                      <Link href="/subreddits">Subreddits</Link>
-                    </Button>
+                  <div className="flex h-8 items-center gap-4">
+                    {user ? (
+                      <>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline">Subreddits</Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            {subreddits.map((subreddit) => (
+                              <DropdownMenuItem key={subreddit.id} asChild>
+                                <Link
+                                  className="hover:cursor-pointer"
+                                  href={`/r/${subreddit.name}`}
+                                >
+                                  {subreddit.title}
+                                </Link>
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                              <Link
+                                className="hover:cursor-pointer"
+                                href="/subreddits"
+                              >
+                                More...
+                              </Link>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Separator orientation="vertical" />
+                        <Button variant="ghost" asChild>
+                          <Link href="/">Home</Link>
+                        </Button>
+
+                        <Button variant="ghost" asChild>
+                          <Link href="/all">All</Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <Button variant="outline" asChild>
+                        <Link href="/subreddits">Subreddits</Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
                 {user ? (
