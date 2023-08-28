@@ -1,7 +1,7 @@
 import { authMiddleware } from "@clerk/nextjs";
 
 export default authMiddleware({
-  publicRoutes: ["/", "/subreddits"],
+  publicRoutes: ["/", "/subreddits", "/r/:subreddit"],
 });
 
 export const config = {

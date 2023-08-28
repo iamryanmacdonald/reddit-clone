@@ -9,14 +9,10 @@ import { Loader2 } from "lucide-react";
 
 import SubredditCard from "~/components/subreddit-card";
 import { Input } from "~/components/ui/input";
-
-export interface Data {
-  subreddit: Subreddit;
-  subscribed: boolean;
-}
+import { APIModelOutputs } from "~/lib/api-models";
 
 interface SubredditGridProps {
-  data: Data[];
+  data: APIModelOutputs["subreddits/search:POST"];
   userId: string | null | undefined;
 }
 
@@ -33,13 +29,13 @@ export default function SubredditGrid(props: SubredditGridProps) {
   } = useQuery(["subreddits", debouncedInput], {
     initialData: data,
     queryFn: async () => {
-      if (debouncedInput.length < 1) return;
+      if (debouncedInput.length < 1) return data;
 
       const res = await axios.post(`/api/subreddits/search`, {
         input: debouncedInput,
       });
 
-      return res.data as Data[];
+      return res.data as APIModelOutputs["subreddits/search:POST"];
     },
   });
 

@@ -75,6 +75,9 @@ module.exports = {
           to: { height: 0 },
         },
       },
+      spacing: {
+        128: "32rem",
+      },
     },
   },
 };
