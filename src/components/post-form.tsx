@@ -241,7 +241,6 @@ export default function PostForm(props: PostFormProps) {
                 </FormItem>
               )}
             />
-            {JSON.stringify(form.getValues())}
             <Button type="submit" className="mt-4" disabled={isLoading}>
               Submit
             </Button>
