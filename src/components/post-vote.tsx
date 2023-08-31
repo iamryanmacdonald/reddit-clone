@@ -1,10 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import { ArrowBigDown, ArrowBigUp } from "lucide-react";
+import { z } from "zod";
+
+import { APIModelInputs, APIModelOutputs } from "~/lib/api-models";
+
+export type VoteType = -1 | 0 | 1;
 
 interface PostVoteProps {
-  vote?: -1 | 0 | 1;
+  postId: string;
+  vote?: VoteType;
   votes?: number;
 }
 
@@ -12,41 +20,45 @@ export default function PostVote(props: PostVoteProps) {
   const [vote, setVote] = useState(props.vote ?? 0);
   const [votes, setVotes] = useState(props.votes ?? 0);
 
-  const color = "orange-500";
+  const { isLoading, mutate } = useMutation({
+    mutationFn: async (
+      body: z.infer<(typeof APIModelInputs)["posts/[id]/vote"]>,
+    ) => {
+      const res = await axios.post(`/api/posts/${props.postId}/vote`, body);
+
+      return res.data as APIModelOutputs["posts/[id]/vote"];
+    },
+    onSuccess: ({ vote, votes }) => {
+      setVote(vote as VoteType);
+      setVotes(votes);
+    },
+  });
 
   return (
     <div className="flex flex-col items-center gap-1 p-2">
       <ArrowBigUp
         className={`h-8 w-8 ${
-          vote === 1
-            ? `fill-${color} text-${color} hover:fill-inherit hover:text-inherit`
-            : `hover:fill-${color} hover:text-${color}`
+          isLoading
+            ? "fill-gray-500 text-gray-500 opacity-75"
+            : vote === 1
+            ? "fill-orange-500 text-orange-500 hover:fill-inherit hover:text-inherit"
+            : "hover:fill-orange-500 hover:text-orange-500"
         }`}
         onClick={() => {
-          if (vote === 1) {
-            setVote(0);
-            setVotes(votes - 1);
-          } else {
-            setVote(1);
-            setVotes(votes + 1 - vote);
-          }
+          if (!isLoading) mutate({ vote: vote === 1 ? 0 : 1 });
         }}
       />
       <span className="text-lg">{votes}</span>
       <ArrowBigDown
         className={`h-8 w-8 ${
-          vote === -1
-            ? `fill-${color} text-${color} hover:fill-inherit hover:text-inherit`
-            : `hover:fill-${color} hover:text-${color}`
+          isLoading
+            ? "fill-gray-500 text-gray-500 opacity-75"
+            : vote === -1
+            ? "fill-orange-500 text-orange-500 hover:fill-inherit hover:text-inherit"
+            : "hover:fill-orange-500 hover:text-orange-500"
         }`}
         onClick={() => {
-          if (vote === -1) {
-            setVote(0);
-            setVotes(votes + 1);
-          } else {
-            setVote(-1);
-            setVotes(votes - 1 - vote);
-          }
+          if (!isLoading) mutate({ vote: vote === -1 ? 0 : -1 });
         }}
       />
     </div>

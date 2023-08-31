@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import { clerkClient } from "@clerk/nextjs";
+import { auth, clerkClient } from "@clerk/nextjs";
 
 import Post from "~/components/post";
 import Sidebar from "~/components/sidebar";
 import { prisma } from "~/lib/db";
-import { postsToUserMap } from "~/lib/helpers";
+import { postsToUserMap, postsToVotesMap } from "~/lib/helpers";
 
 interface PageProps {
   params: {
@@ -13,6 +13,8 @@ interface PageProps {
 }
 
 export default async function Page(props: PageProps) {
+  const { userId } = auth();
+
   const { name } = props.params;
 
   const subreddit = await prisma.subreddit.findFirst({
@@ -33,12 +35,20 @@ export default async function Page(props: PageProps) {
   if (!subreddit) return notFound();
 
   const users = await postsToUserMap(subreddit.posts);
+  const votes = await postsToVotesMap(subreddit.posts);
 
   return (
     <div className="flex w-full">
       <div className="flex grow flex-col gap-4">
         {subreddit.posts.map((post) => (
-          <Post key={post.id} post={post} username={users[post.authorId]} />
+          <Post
+            key={post.id}
+            loggedIn={!!userId}
+            post={post}
+            username={users[post.authorId]}
+            vote={post.votes.find((vote) => vote.userId === userId)?.vote ?? 0}
+            votes={votes[post.id] ?? 0}
+          />
         ))}
       </div>
       <div className="flex flex-col">

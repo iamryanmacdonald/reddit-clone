@@ -42,3 +42,24 @@ export async function postsToUserMap(posts: Post[]) {
 
   return userMap;
 }
+
+export async function postsToVotesMap(posts: Post[]) {
+  const votesMap: { [key: string]: number } = {};
+
+  for (let i = 0; i < posts.length; i++) {
+    const post = posts[i];
+
+    const votesAgg = await prisma.postVote.aggregate({
+      _sum: {
+        vote: true,
+      },
+      where: {
+        postId: post.id,
+      },
+    });
+
+    votesMap[post.id] = votesAgg._sum.vote ?? 0;
+  }
+
+  return votesMap;
+}

@@ -1,7 +1,7 @@
 import { Subreddit } from "@prisma/client";
 import { z } from "zod";
 
-import { PostModel } from "~/lib/validators";
+import { PostModel, PostVoteModel } from "~/lib/validators";
 
 export const APIModelInputs = {
   "posts:POST": PostModel.omit({
@@ -18,12 +18,17 @@ export const APIModelInputs = {
       (data) => (data.content && !data.url) || (!data.content && data.url),
       "URL or content should be provided",
     ),
+  "posts/[id]/vote": PostVoteModel.omit({ postId: true, userId: true }),
 };
 
 export interface APIModelOutputs {
   "posts:POST": {
     postId: string;
     subreddit: string;
+  };
+  "posts/[id]/vote": {
+    vote: number;
+    votes: number;
   };
   "subreddits/search:POST": {
     subreddit: Subreddit;
