@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs";
+import { getServerSession } from "next-auth";
 import { z } from "zod";
 
 import { APIModelInputs } from "~/lib/api-models";
+import { authOptions } from "~/lib/auth";
 import { prisma } from "~/lib/db";
 
 export async function POST(req: Request) {
   try {
     // Make sure the user is authorized
-    const { userId } = auth();
+    const session = await getServerSession(authOptions);
 
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
     // Pull inputs from the request
     const body = await req.json();
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
       // Create the post
       const post = await prisma.post.create({
         data: {
-          authorId: userId,
+          authorId: session.user.id,
           content: data.content,
           subredditId: subreddit.id,
           title: data.title,
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
       await prisma.postVote.create({
         data: {
           postId: post.id,
-          userId,
+          userId: session.user.id,
           vote: 1,
         },
       });

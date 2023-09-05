@@ -1,6 +1,5 @@
-import { SignIn } from "@clerk/nextjs";
-
 import Modal from "~/components/modal";
+import SignIn from "~/components/sign-in";
 
 export default function Page() {
   return (

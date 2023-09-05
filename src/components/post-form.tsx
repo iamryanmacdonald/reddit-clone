@@ -176,7 +176,7 @@ export default function PostForm(props: PostFormProps) {
             <FormField
               control={form.control}
               name="subreddit"
-              render={({ field }) => (
+              render={() => (
                 <FormItem className="mt-4">
                   <FormLabel>subreddit</FormLabel>
                   <FormControl>

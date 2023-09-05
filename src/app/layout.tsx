@@ -2,18 +2,13 @@ import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
-import { ClerkProvider, currentUser, SignOutButton } from "@clerk/nextjs";
+import { Subreddit } from "@prisma/client";
+import { getServerSession } from "next-auth";
 
 import ModeToggle from "~/components/mode-toggle";
 import Providers from "~/components/providers";
+import SignOutButton from "~/components/sign-out-button";
 import { Button } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
-import { cn } from "~/lib/utils";
-
-import "./globals.css";
-
-import { Subreddit } from "@prisma/client";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +16,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { Separator } from "~/components/ui/separator";
+import { authOptions } from "~/lib/auth";
 import { prisma } from "~/lib/db";
+import { cn } from "~/lib/utils";
+
+import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,18 +39,18 @@ export default async function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }) {
-  const user = await currentUser();
+  const session = await getServerSession(authOptions);
 
   let subreddits: Subreddit[] = [];
 
-  if (user) {
+  if (session) {
     subreddits = await prisma.subreddit.findMany({
       orderBy: [{ name: "asc" }],
       take: 10,
       where: {
         subscribers: {
           some: {
-            subscriberId: user.id,
+            subscriberId: session.user.id,
           },
         },
       },
@@ -58,97 +58,88 @@ export default async function RootLayout({
   }
 
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <head />
-        <body className={cn("bg-background antialiased", inter.className)}>
-          <Providers attribute="class" defaultTheme="system" enableSystem>
-            <div className="h-full flex-col">
-              <nav className="fixed left-0 top-0 flex h-12 w-full items-center justify-between bg-background px-8">
-                <div className="flex items-center gap-12">
-                  <Link href="/" className="text-xl font-semibold">
-                    reddit.
-                  </Link>
-                  <div className="flex h-8 items-center gap-4">
-                    {user ? (
-                      <>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline">Subreddits</Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            {subreddits.map((subreddit) => (
-                              <DropdownMenuItem key={subreddit.id} asChild>
-                                <Link
-                                  className="hover:cursor-pointer"
-                                  href={`/r/${subreddit.name}`}
-                                >
-                                  {subreddit.title}
-                                </Link>
-                              </DropdownMenuItem>
-                            ))}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body className={cn("bg-background antialiased", inter.className)}>
+        <Providers attribute="class" defaultTheme="system" enableSystem>
+          <div className="h-full flex-col">
+            <nav className="fixed left-0 top-0 flex h-12 w-full items-center justify-between bg-background px-8">
+              <div className="flex items-center gap-12">
+                <Link href="/" className="text-xl font-semibold">
+                  reddit.
+                </Link>
+                <div className="flex h-8 items-center gap-4">
+                  {session ? (
+                    <>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline">Subreddits</Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          {subreddits.map((subreddit) => (
+                            <DropdownMenuItem key={subreddit.id} asChild>
                               <Link
                                 className="hover:cursor-pointer"
-                                href="/subreddits"
+                                href={`/r/${subreddit.name}`}
                               >
-                                More...
+                                {subreddit.title}
                               </Link>
                             </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Separator orientation="vertical" />
-                        <Button variant="ghost" asChild>
-                          <Link href="/">Home</Link>
-                        </Button>
-
-                        <Button variant="ghost" asChild>
-                          <Link href="/all">All</Link>
-                        </Button>
-                      </>
-                    ) : (
-                      <Button variant="outline" asChild>
-                        <Link href="/subreddits">Subreddits</Link>
+                          ))}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link
+                              className="hover:cursor-pointer"
+                              href="/subreddits"
+                            >
+                              More...
+                            </Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <Separator orientation="vertical" />
+                      <Button variant="ghost" asChild>
+                        <Link href="/">Home</Link>
                       </Button>
-                    )}
-                  </div>
+
+                      <Button variant="ghost" asChild>
+                        <Link href="/all">All</Link>
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant="outline" asChild>
+                      <Link href="/subreddits">Subreddits</Link>
+                    </Button>
+                  )}
                 </div>
-                {user ? (
-                  <div className="flex items-center gap-4">
-                    <span>Welcome, {user.firstName}</span>
-                    <SignOutButton>
-                      <Button>Sign Out</Button>
-                    </SignOutButton>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Link href="/sign-up">
-                      <Button variant="outline">Sign Up</Button>
-                    </Link>
-                    <Link href="/sign-in">
-                      <Button variant="secondary">Sign In</Button>
-                    </Link>
-                  </div>
-                )}
-              </nav>
-              <Separator className="fixed left-0 top-12" />
-              <main className="my-12 px-4 py-2">{children}</main>
-              <Separator className="fixed bottom-12 left-0" />
-              <footer className="fixed bottom-0 left-0 flex h-12 w-full items-center justify-between bg-background px-4">
-                <ModeToggle />
-                <span className="font-mono text-sm">
-                  by{" "}
-                  <a href="https://github.com/iamryanmacdonald">
-                    Ryan Macdonald
-                  </a>
-                </span>
-              </footer>
-            </div>
-            {modal}
-          </Providers>
-        </body>
-      </html>
-    </ClerkProvider>
+              </div>
+              {session ? (
+                <div className="flex items-center gap-4">
+                  <span>Welcome, {session.user.name}</span>
+                  <SignOutButton />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link href="/sign-in">
+                    <Button variant="secondary">Sign In</Button>
+                  </Link>
+                </div>
+              )}
+            </nav>
+            <Separator className="fixed left-0 top-12" />
+            <main className="my-12 px-4 py-2">{children}</main>
+            <Separator className="fixed bottom-12 left-0" />
+            <footer className="fixed bottom-0 left-0 flex h-12 w-full items-center justify-between bg-background px-4">
+              <ModeToggle />
+              <span className="font-mono text-sm">
+                by{" "}
+                <a href="https://github.com/iamryanmacdonald">Ryan Macdonald</a>
+              </span>
+            </footer>
+          </div>
+          {modal}
+        </Providers>
+      </body>
+    </html>
   );
 }

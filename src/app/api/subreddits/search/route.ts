@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs";
+import { getServerSession } from "next-auth";
 import { z } from "zod";
 
+import { authOptions } from "~/lib/auth";
 import { prisma } from "~/lib/db";
 import { subredditsWithSubscribers } from "~/lib/helpers";
 
@@ -31,12 +32,12 @@ export async function POST(req: Request) {
     });
 
     // Check if an authenticated user is making this request
-    const { userId } = auth();
+    const session = await getServerSession(authOptions);
 
     // Map subscriptions to subreddits
     const mappedSubreddits = await subredditsWithSubscribers(
       subreddits,
-      userId,
+      session ? session.user.id : null,
     );
 
     // Return list of subreddits with subscription mapping

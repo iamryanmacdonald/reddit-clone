@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs";
+import { getServerSession } from "next-auth";
 import { z } from "zod";
 
+import { authOptions } from "~/lib/auth";
 import { prisma } from "~/lib/db";
 import { SubredditModel } from "~/lib/validators";
 
 export async function POST(req: Request) {
   try {
     // Make sure the user is authorized
-    const { userId } = auth();
+    const session = await getServerSession(authOptions);
 
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
     // Pull inputs from the request
     const body = await req.json();
@@ -36,14 +37,14 @@ export async function POST(req: Request) {
       await prisma.moderator.create({
         data: {
           head: true,
-          moderatorId: userId,
+          moderatorId: session.user.id,
           subredditId: subreddit.id,
         },
       });
       // Subscribe the user to the newly created subreddit
       await prisma.subscription.create({
         data: {
-          subscriberId: userId,
+          subscriberId: session.user.id,
           subredditId: subreddit.id,
         },
       });

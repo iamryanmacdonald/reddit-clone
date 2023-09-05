@@ -14,7 +14,7 @@ export default function Post(props: PostProps) {
   const { loggedIn, post, username, vote, votes } = props;
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border px-4">
       <div className="flex gap-2">
         {loggedIn && (
           <PostVote postId={post.id} vote={vote as VoteType} votes={votes} />

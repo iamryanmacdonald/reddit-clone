@@ -1,11 +1,12 @@
-import { auth } from "@clerk/nextjs";
+import { getServerSession } from "next-auth";
 
 import SubredditGrid from "~/components/subreddit-grid";
+import { authOptions } from "~/lib/auth";
 import { prisma } from "~/lib/db";
 import { subredditsWithSubscribers } from "~/lib/helpers";
 
 export default async function Page() {
-  const { userId } = auth();
+  const session = await getServerSession(authOptions);
 
   const subreddits = await prisma.subreddit.findMany({
     include: {
@@ -17,7 +18,10 @@ export default async function Page() {
     take: 25,
   });
 
-  const data = await subredditsWithSubscribers(subreddits, userId);
+  const data = await subredditsWithSubscribers(
+    subreddits,
+    session?.user.id ?? null,
+  );
 
-  return <SubredditGrid data={data} userId={userId} />;
+  return <SubredditGrid data={data} userId={session?.user.id ?? ""} />;
 }

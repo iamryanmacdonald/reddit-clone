@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs";
-import { Database } from "lucide-react";
+import { getServerSession } from "next-auth";
 import { z } from "zod";
 
+import { authOptions } from "~/lib/auth";
 import { prisma } from "~/lib/db";
 
 export async function PUT(req: Request) {
   try {
     // Make sure the user is authorized
-    const { userId } = auth();
+    const session = await getServerSession(authOptions);
 
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
     // Pull inputs from the request
     const body = await req.json();
@@ -26,7 +26,7 @@ export async function PUT(req: Request) {
       await prisma.subscription.create({
         data: {
           subredditId: data.subredditId,
-          subscriberId: userId,
+          subscriberId: session.user.id,
         },
       });
 
@@ -36,7 +36,7 @@ export async function PUT(req: Request) {
         where: {
           subredditId_subscriberId: {
             subredditId: data.subredditId,
-            subscriberId: userId,
+            subscriberId: session.user.id,
           },
         },
       });

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs";
+import { getServerSession } from "next-auth";
 import { z } from "zod";
 
 import { APIModelInputs } from "~/lib/api-models";
+import { authOptions } from "~/lib/auth";
 import { prisma } from "~/lib/db";
 
 export async function POST(
@@ -11,9 +12,9 @@ export async function POST(
 ) {
   try {
     // Make sure the user is authorized
-    const { userId } = auth();
+    const session = await getServerSession(authOptions);
 
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
     // Pull id from the params
     const { id } = params;
@@ -34,7 +35,7 @@ export async function POST(
     const postVote = await prisma.postVote.upsert({
       create: {
         postId: id,
-        userId,
+        userId: session.user.id,
         vote: data.vote,
       },
       update: {
@@ -43,7 +44,7 @@ export async function POST(
       where: {
         postId_userId: {
           postId: id,
-          userId,
+          userId: session.user.id,
         },
       },
     });
