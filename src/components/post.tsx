@@ -14,7 +14,7 @@ export default function Post(props: PostProps) {
 
   return (
     <div className="mb-2 rounded-md border px-4">
-      <div className="flex gap-2">
+      <div className="flex gap-4">
         {loggedIn && (
           <PostVote postId={post.id} vote={vote as VoteType} votes={votes} />
         )}

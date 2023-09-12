@@ -11,7 +11,7 @@ import {
 export const APIModelInputs = {
   "posts:GET": z.object({
     after: z.coerce.number().optional(),
-    subreddit: z.string().optional(),
+    subreddit: z.string().nullish().optional(),
     take: z.coerce.number().optional(),
   }),
   "posts:POST": PostModel.omit({

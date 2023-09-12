@@ -12,7 +12,7 @@ import { prisma } from "~/lib/db";
 
 interface PostFeedProps {
   session: Session | null;
-  subreddit: string | undefined;
+  subreddit?: string;
 }
 
 export default function PostFeed({ session, subreddit }: PostFeedProps) {
