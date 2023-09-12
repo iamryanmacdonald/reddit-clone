@@ -11,7 +11,7 @@ import { APIModelInputs, APIModelOutputs } from "~/lib/api-models";
 export type VoteType = -1 | 0 | 1;
 
 interface PostVoteProps {
-  postId: string;
+  postId: number;
   vote?: VoteType;
   votes?: number;
 }
@@ -22,11 +22,11 @@ export default function PostVote(props: PostVoteProps) {
 
   const { isLoading, mutate } = useMutation({
     mutationFn: async (
-      body: z.infer<(typeof APIModelInputs)["posts/[id]/vote"]>,
+      body: z.infer<(typeof APIModelInputs)["posts/[id]/vote:POST"]>,
     ) => {
       const res = await axios.post(`/api/posts/${props.postId}/vote`, body);
 
-      return res.data as APIModelOutputs["posts/[id]/vote"];
+      return res.data as APIModelOutputs["posts/[id]/vote:POST"];
     },
     onSuccess: ({ vote, votes }) => {
       setVote(vote as VoteType);

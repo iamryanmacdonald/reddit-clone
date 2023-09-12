@@ -1,13 +1,25 @@
-import { Subreddit } from "@prisma/client";
+import { Post, Subreddit } from "@prisma/client";
 import { z } from "zod";
 
-import { PostModel, PostVoteModel } from "~/lib/validators";
+import {
+  CompletePost,
+  PostModel,
+  PostVoteModel,
+  RelatedPostModel,
+} from "~/lib/validators";
 
 export const APIModelInputs = {
+  "posts:GET": z.object({
+    after: z.coerce.number().optional(),
+    subreddit: z.string().optional(),
+    take: z.coerce.number().optional(),
+  }),
   "posts:POST": PostModel.omit({
     authorId: true,
+    createdAt: true,
     id: true,
     subredditId: true,
+    updatedAt: true,
   })
     .merge(
       z.object({
@@ -18,15 +30,19 @@ export const APIModelInputs = {
       (data) => (data.content && !data.url) || (!data.content && data.url),
       "URL or content should be provided",
     ),
-  "posts/[id]/vote": PostVoteModel.omit({ postId: true, userId: true }),
+  "posts/[id]/vote:POST": PostVoteModel.omit({ postId: true, userId: true }),
 };
 
 export interface APIModelOutputs {
+  "posts:GET": {
+    nextCursor: number | undefined;
+    posts: CompletePost[];
+  };
   "posts:POST": {
-    postId: string;
+    postId: number;
     subreddit: string;
   };
-  "posts/[id]/vote": {
+  "posts/[id]/vote:POST": {
     vote: number;
     votes: number;
   };

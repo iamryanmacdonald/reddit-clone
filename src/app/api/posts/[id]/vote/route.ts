@@ -17,7 +17,7 @@ export async function POST(
     if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
     // Pull id from the params
-    const { id } = params;
+    const id = parseInt(params.id);
 
     // Check if the post exists
     const post = await prisma.post.findUnique({
@@ -30,7 +30,7 @@ export async function POST(
 
     // Pull inputs from the request
     const body = await req.json();
-    const data = APIModelInputs["posts/[id]/vote"].parse(body);
+    const data = APIModelInputs["posts/[id]/vote:POST"].parse(body);
 
     const postVote = await prisma.postVote.upsert({
       create: {

@@ -17,7 +17,7 @@ datasource db {
 }
 
 model Subreddit {
-  id   String @id @default(cuid()) /// @zod.cuid()
+  id   Int    @id @default(autoincrement())
   name String @unique /// @zod.min(3).max(21)
 
   description String /// @zod.max(500)
@@ -30,7 +30,7 @@ model Subreddit {
 
 model Moderator {
   moderatorId String
-  subredditId String
+  subredditId Int
 
   head Boolean
 
@@ -43,7 +43,7 @@ model Moderator {
 }
 
 model Subscription {
-  subredditId  String
+  subredditId  Int
   subscriberId String
 
   subreddit  Subreddit @relation(fields: [subredditId], references: [id], onDelete: Cascade)
@@ -55,7 +55,7 @@ model Subscription {
 }
 
 model Post {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   title     String /// @zod.min(3).max(50)
@@ -63,7 +63,7 @@ model Post {
   url       String?
 
   authorId    String
-  subredditId String
+  subredditId Int
 
   author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   subreddit Subreddit @relation(fields: [subredditId], references: [id], onDelete: Cascade)
@@ -75,7 +75,7 @@ model Post {
 }
 
 model PostVote {
-  postId String
+  postId Int
   userId String
 
   vote Int /// @zod.min(-1).max(1)

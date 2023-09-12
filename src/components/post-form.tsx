@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Subreddit } from "@prisma/client";
@@ -106,6 +106,7 @@ export default function PostForm(props: PostFormProps) {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     mutate(values);
   };
+
   return (
     <div className={`bg-background ${props.className}`}>
       <Tabs defaultValue={postType}>
