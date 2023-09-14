@@ -8,7 +8,6 @@ import InfiniteScroll from "react-infinite-scroll-component";
 
 import Post from "~/components/post";
 import { APIModelOutputs } from "~/lib/api-models";
-import { prisma } from "~/lib/db";
 
 interface PostFeedProps {
   session: Session | null;

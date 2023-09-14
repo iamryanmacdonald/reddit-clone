@@ -17,9 +17,12 @@ export default function Post(props: PostProps) {
   return (
     <div className="mb-2 rounded-md border px-4">
       <div className="flex gap-4">
-        {loggedIn && (
-          <PostVote postId={post.id} vote={vote as VoteType} votes={votes} />
-        )}
+        <PostVote
+          loggedIn={loggedIn}
+          postId={post.id}
+          vote={vote as VoteType}
+          votes={votes}
+        />
         <div className="flex flex-col justify-between py-2">
           <div className="flex flex-col">
             <div className="text-xl font-semibold hover:underline">

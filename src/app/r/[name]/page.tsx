@@ -1,9 +1,7 @@
 import { getServerSession } from "next-auth";
 
-import Post from "~/components/post";
 import PostFeed from "~/components/post-feed";
 import { authOptions } from "~/lib/auth";
-import { prisma } from "~/lib/db";
 
 interface PageProps {
   params: {
