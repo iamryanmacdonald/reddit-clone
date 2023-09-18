@@ -24,6 +24,7 @@ export async function GET(req: Request) {
     const posts = await prisma.post.findMany({
       include: {
         author: true,
+        comments: true,
         subreddit: true,
         votes: true,
       },

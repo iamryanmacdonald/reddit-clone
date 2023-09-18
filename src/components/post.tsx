@@ -36,7 +36,7 @@ export default function Post(props: PostProps) {
           <div className="mt-1 flex items-center gap-4">
             <Link href={`/r/${post.subreddit.name}/${post.id}`}>
               <div className="rounded-md px-2 py-1 hover:cursor-pointer hover:bg-secondary">
-                0 comments
+                {post.comments.length} comments
               </div>
             </Link>
             <div className="rounded-md px-2 py-1 hover:cursor-pointer hover:bg-secondary">
