@@ -30,42 +30,41 @@ export async function POST(
 
     // Pull inputs from the request
     const body = await req.json();
-    const data = APIModelInputs["posts/[id]/vote:POST"].parse(body);
+    const data = APIModelInputs["posts/[id]/comments:POST"].parse(body);
 
-    const postVote = await prisma.postVote.upsert({
-      create: {
-        postId: id,
-        userId: session.user.id,
-        vote: data.vote,
-      },
-      update: {
-        vote: data.vote,
-      },
-      where: {
-        postId_userId: {
-          postId: id,
-          userId: session.user.id,
+    // Batch comment creation and upvote creation
+    const comment = await prisma.$transaction(async (tx) => {
+      // Create the comment
+      const { id } = await tx.comment.create({
+        data: {
+          ...data,
+          authorId: session.user.id,
         },
-      },
+        include: {
+          author: true,
+          votes: true,
+        },
+      });
+      // Create an upvote for the use to the comment
+      await tx.commentVote.create({
+        data: {
+          commentId: id,
+          userId: session.user.id,
+          vote: 1,
+        },
+      });
+
+      // Refetch the comment
+      const comment = await tx.comment.findUnique({ where: { id } });
+
+      return comment;
     });
 
-    // Get post votes to return
-    const votesAgg = await prisma.postVote.aggregate({
-      _sum: {
-        vote: true,
-      },
-      where: {
-        postId: id,
-      },
-    });
-
-    return new NextResponse(
-      JSON.stringify({ vote: postVote.vote, votes: votesAgg._sum.vote ?? 0 }),
-    );
+    return new NextResponse(JSON.stringify({ comment }));
   } catch (error) {
     if (error instanceof z.ZodError)
       return new NextResponse(JSON.stringify(error.issues), { status: 422 });
 
-    return new NextResponse("Error creating post vote", { status: 500 });
+    return new NextResponse("Error creating comment", { status: 500 });
   }
 }

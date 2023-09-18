@@ -30,11 +30,11 @@ export async function POST(req: Request) {
     // Batch these operations to ensure that they either all commit, or none of them commit
     const subreddit = await prisma.$transaction(async (tx) => {
       // Create the new subreddit
-      const subreddit = await prisma.subreddit.create({
+      const subreddit = await tx.subreddit.create({
         data,
       });
       // Set the user creating the subreddit as head moderator
-      await prisma.moderator.create({
+      await tx.moderator.create({
         data: {
           head: true,
           moderatorId: session.user.id,
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         },
       });
       // Subscribe the user to the newly created subreddit
-      await prisma.subscription.create({
+      await tx.subscription.create({
         data: {
           subscriberId: session.user.id,
           subredditId: subreddit.id,

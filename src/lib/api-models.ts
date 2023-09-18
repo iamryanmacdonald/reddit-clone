@@ -1,14 +1,20 @@
-import { Post, Subreddit } from "@prisma/client";
+import { Subreddit } from "@prisma/client";
 import { z } from "zod";
 
+import { CommentType } from "~/components/comment";
 import {
+  CommentModel,
+  CommentVoteModel,
   CompletePost,
   PostModel,
   PostVoteModel,
-  RelatedPostModel,
 } from "~/lib/validators";
 
 export const APIModelInputs = {
+  "comments/[id]/vote:POST": CommentVoteModel.omit({
+    commentId: true,
+    userId: true,
+  }),
   "posts:GET": z.object({
     after: z.coerce.number().optional(),
     subreddit: z.string().nullish().optional(),
@@ -30,10 +36,20 @@ export const APIModelInputs = {
       (data) => (data.content && !data.url) || (!data.content && data.url),
       "URL or content should be provided",
     ),
+  "posts/[id]/comments:POST": CommentModel.omit({
+    authorId: true,
+    createdAt: true,
+    id: true,
+    updatedAt: true,
+  }),
   "posts/[id]/vote:POST": PostVoteModel.omit({ postId: true, userId: true }),
 };
 
 export interface APIModelOutputs {
+  "comments/[id]/vote:POST": {
+    vote: number;
+    votes: number;
+  };
   "posts:GET": {
     nextCursor: number | undefined;
     posts: CompletePost[];
@@ -41,6 +57,9 @@ export interface APIModelOutputs {
   "posts:POST": {
     postId: number;
     subreddit: string;
+  };
+  "posts/[id]/comments:POST": {
+    comment: CommentType;
   };
   "posts/[id]/vote:POST": {
     vote: number;

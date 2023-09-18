@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     // Batch post creation and upvote creation
     const post = await prisma.$transaction(async (tx) => {
       // Create the post
-      const post = await prisma.post.create({
+      const post = await tx.post.create({
         data: {
           authorId: session.user.id,
           content: data.content,
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
         },
       });
       // Create an upvote for the user to the post
-      await prisma.postVote.create({
+      await tx.postVote.create({
         data: {
           postId: post.id,
           userId: session.user.id,

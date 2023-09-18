@@ -19,22 +19,23 @@ export async function POST(
     // Pull id from the params
     const id = parseInt(params.id);
 
-    // Check if the post exists
-    const post = await prisma.post.findUnique({
+    // Check if the comment exists
+    const comment = await prisma.comment.findUnique({
       where: {
         id,
       },
     });
 
-    if (!post) return new NextResponse("Post does not exist", { status: 404 });
+    if (!comment)
+      return new NextResponse("Comment does not exist", { status: 404 });
 
     // Pull inputs from the request
     const body = await req.json();
-    const data = APIModelInputs["posts/[id]/vote:POST"].parse(body);
+    const data = APIModelInputs["comments/[id]/vote:POST"].parse(body);
 
-    const postVote = await prisma.postVote.upsert({
+    const commentVote = await prisma.commentVote.upsert({
       create: {
-        postId: id,
+        commentId: id,
         userId: session.user.id,
         vote: data.vote,
       },
@@ -42,30 +43,33 @@ export async function POST(
         vote: data.vote,
       },
       where: {
-        postId_userId: {
-          postId: id,
+        commentId_userId: {
+          commentId: id,
           userId: session.user.id,
         },
       },
     });
 
-    // Get post votes to return
-    const votesAgg = await prisma.postVote.aggregate({
+    // Get comment votes to return
+    const votesAgg = await prisma.commentVote.aggregate({
       _sum: {
         vote: true,
       },
       where: {
-        postId: id,
+        commentId: id,
       },
     });
 
     return new NextResponse(
-      JSON.stringify({ vote: postVote.vote, votes: votesAgg._sum.vote ?? 0 }),
+      JSON.stringify({
+        vote: commentVote.vote,
+        votes: votesAgg._sum.vote ?? 0,
+      }),
     );
   } catch (error) {
     if (error instanceof z.ZodError)
       return new NextResponse(JSON.stringify(error.issues), { status: 422 });
 
-    return new NextResponse("Error creating post vote", { status: 500 });
+    return new NextResponse("Error creating comment vote", { status: 500 });
   }
 }

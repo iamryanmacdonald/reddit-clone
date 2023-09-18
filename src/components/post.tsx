@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import PostVote, { VoteType } from "~/components/post-vote";
+import PostVote from "~/components/post-vote";
+import { VoteType } from "~/lib/types";
 import { CompletePost } from "~/lib/validators";
 
 interface PostProps {
