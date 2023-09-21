@@ -36,6 +36,15 @@ export const APIModelInputs = {
       (data) => (data.content && !data.url) || (!data.content && data.url),
       "URL or content should be provided",
     ),
+  "posts/[id]:PATCH": PostModel.omit({
+    authorId: true,
+    createdAt: true,
+    id: true,
+    subredditId: true,
+    title: true,
+    updatedAt: true,
+    url: true,
+  }),
   "posts/[id]/comments:POST": CommentModel.omit({
     authorId: true,
     createdAt: true,
@@ -57,6 +66,9 @@ export interface APIModelOutputs {
   "posts:POST": {
     postId: number;
     subreddit: string;
+  };
+  "posts/[id]:PATCH": {
+    content: string | null;
   };
   "posts/[id]/comments:POST": {
     comment: CommentType;

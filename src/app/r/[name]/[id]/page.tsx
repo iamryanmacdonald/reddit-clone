@@ -1,15 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Comment as CommentType } from "@prisma/client";
-import moment from "moment";
 import { getServerSession } from "next-auth";
 
 import Comment, { CommentsType } from "~/components/comment";
-import CommentForm from "~/components/comment-form";
-import PostVote from "~/components/post-vote";
+import SubredditPost from "~/components/subreddit-post";
 import { authOptions } from "~/lib/auth";
 import { prisma } from "~/lib/db";
-import { VoteType } from "~/lib/types";
 
 interface PageProps {
   params: {
@@ -70,38 +66,10 @@ export default async function Page(props: PageProps) {
   const comments = Object.values(commentsTree).filter(
     ({ comment }) => comment.parentId === null,
   );
-  console.log(commentsTree);
 
   return (
     <div className="flex w-full flex-col">
-      <div className="flex flex-col border border-accent bg-muted">
-        <div className="flex h-fit gap-4 py-2">
-          <PostVote
-            loggedIn={!!session}
-            postId={post.id}
-            vote={vote as VoteType}
-            votes={votes}
-          />
-          <div className="flex flex-col">
-            <span className="text-xl font-semibold hover:underline">
-              {post.url ? (
-                <Link href={post.url}>{post.title}</Link>
-              ) : (
-                post.title
-              )}
-            </span>
-            <span className="text-sm font-thin text-opacity-75">
-              Submitted {moment(post.createdAt).fromNow()} by {post.author.name}
-            </span>
-            <p className="mt-2">{post.content}</p>
-          </div>
-        </div>
-        <div className="border-t border-accent p-4">
-          <div className="w-1/3">
-            <CommentForm postId={post.id} />
-          </div>
-        </div>
-      </div>
+      <SubredditPost post={post} session={session} vote={vote} votes={votes} />
       <span className="ml-2 mt-2 text-muted-foreground">
         {comments.length > 0
           ? `all ${comments.length} comments`
