@@ -12,15 +12,21 @@ export async function GET(req: Request) {
     const session = await getServerSession(authOptions);
 
     const url = new URL(req.url);
-    const { after, subreddit, take } = APIModelInputs["posts:GET"].parse({
-      after: url.searchParams.get("after"),
-      subreddit: url.searchParams.get("subreddit"),
-      take: url.searchParams.get("take"),
-    });
+    const { after, saved, subreddit, take } = APIModelInputs["posts:GET"].parse(
+      {
+        after: url.searchParams.get("after"),
+        saved: url.searchParams.get("saved"),
+        subreddit: url.searchParams.get("subreddit"),
+        take: url.searchParams.get("take"),
+      },
+    );
+
+    console.log("SAVED", saved);
 
     const where: Prisma.PostWhereInput = {};
 
     if (after) where.id = { lte: after };
+    if (saved) where.saves = { some: { userId: session?.user.id } };
     if (subreddit) where.subreddit = { name: subreddit };
 
     const posts = await prisma.post.findMany({

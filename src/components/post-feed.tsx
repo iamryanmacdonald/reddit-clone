@@ -10,26 +10,31 @@ import Post from "~/components/post";
 import { APIModelOutputs } from "~/lib/api-models";
 
 interface PostFeedProps {
+  saved?: boolean;
   session: Session | null;
   subreddit?: string;
 }
 
-export default function PostFeed({ session, subreddit }: PostFeedProps) {
-  const { data, hasNextPage, fetchNextPage, isLoading } = useInfiniteQuery(
-    ["post-feed"],
-    async ({ pageParam }) => {
-      let url = "/api/posts?take=20";
-      if (pageParam) url += "&after=" + pageParam;
-      if (subreddit) url += "&subreddit=" + subreddit;
+export default function PostFeed(props: PostFeedProps) {
+  const { saved, session, subreddit } = props;
 
-      const res = await axios.get(url);
+  const { data, fetchNextPage, hasNextPage, isLoading, refetch } =
+    useInfiniteQuery(
+      ["post-feed"],
+      async ({ pageParam }) => {
+        let url = "/api/posts?take=20";
+        if (pageParam) url += "&after=" + pageParam;
+        if (saved) url += "&saved=true";
+        if (subreddit) url += "&subreddit=" + subreddit;
 
-      return res.data as APIModelOutputs["posts:GET"];
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-    },
-  );
+        const res = await axios.get(url);
+
+        return res.data as APIModelOutputs["posts:GET"];
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      },
+    );
 
   if (isLoading)
     return (
@@ -65,6 +70,8 @@ export default function PostFeed({ session, subreddit }: PostFeedProps) {
               key={post.id}
               loggedIn={!!session}
               post={post}
+              refetch={true}
+              refetchFunction={refetch}
               saved={saved}
               username={post.author.name ?? ""}
               vote={vote}

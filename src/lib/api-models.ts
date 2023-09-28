@@ -17,6 +17,7 @@ export const APIModelInputs = {
   }),
   "posts:GET": z.object({
     after: z.coerce.number().optional(),
+    saved: z.coerce.boolean().optional(),
     subreddit: z.string().nullish().optional(),
     take: z.coerce.number().optional(),
   }),

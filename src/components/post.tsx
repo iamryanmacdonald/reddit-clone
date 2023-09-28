@@ -1,11 +1,11 @@
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { z } from "zod";
 
 import PostVote from "~/components/post-vote";
-import { Button } from "~/components/ui/button";
 import { APIModelInputs, APIModelOutputs } from "~/lib/api-models";
 import { VoteType } from "~/lib/types";
 import { CompletePost } from "~/lib/validators";
@@ -13,6 +13,8 @@ import { CompletePost } from "~/lib/validators";
 interface PostProps {
   loggedIn: boolean;
   post: CompletePost;
+  refetch?: boolean;
+  refetchFunction?: () => void;
   saved: boolean;
   username: string;
   vote: number;
@@ -20,8 +22,10 @@ interface PostProps {
 }
 
 export default function Post(props: PostProps) {
-  const { loggedIn, post, username, vote, votes } = props;
+  const { loggedIn, post, refetch, refetchFunction, username, vote, votes } =
+    props;
 
+  const router = useRouter();
   const [saved, setSaved] = useState(props.saved);
 
   const { isLoading, mutate } = useMutation({
@@ -34,6 +38,7 @@ export default function Post(props: PostProps) {
     },
     onSuccess: ({ saved }) => {
       setSaved(saved);
+      if (refetch && refetchFunction) refetchFunction();
     },
   });
 
