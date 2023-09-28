@@ -79,7 +79,7 @@ export default function CommentForm(props: CommentFormProps) {
           )}
         />
         <Button type="submit" className="mt-2" disabled={isLoading}>
-          Save
+          Submit
         </Button>
       </form>
     </Form>

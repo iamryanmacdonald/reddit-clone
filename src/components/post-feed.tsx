@@ -54,7 +54,7 @@ export default function PostFeed({ session, subreddit }: PostFeedProps) {
         loader={<Loader2 className="mx-auto mt-16 h-16 w-16 animate-spin" />}
         next={fetchNextPage}
       >
-        {posts?.map((post) => {
+        {posts?.map(({ post, saved }) => {
           const vote =
             post.votes.find((vote) => vote.userId === session?.user.id)?.vote ??
             0;
@@ -65,6 +65,7 @@ export default function PostFeed({ session, subreddit }: PostFeedProps) {
               key={post.id}
               loggedIn={!!session}
               post={post}
+              saved={saved}
               username={post.author.name ?? ""}
               vote={vote}
               votes={votes}

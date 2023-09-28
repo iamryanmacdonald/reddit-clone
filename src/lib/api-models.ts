@@ -1,5 +1,5 @@
 import { Subreddit } from "@prisma/client";
-import { z } from "zod";
+import z from "zod";
 
 import { CommentType } from "~/components/comment";
 import {
@@ -51,6 +51,7 @@ export const APIModelInputs = {
     id: true,
     updatedAt: true,
   }),
+  "posts/[id]/save:POST": z.object({ save: z.boolean() }),
   "posts/[id]/vote:POST": PostVoteModel.omit({ postId: true, userId: true }),
 };
 
@@ -61,7 +62,7 @@ export interface APIModelOutputs {
   };
   "posts:GET": {
     nextCursor: number | undefined;
-    posts: CompletePost[];
+    posts: { post: CompletePost; saved: boolean }[];
   };
   "posts:POST": {
     postId: number;
@@ -72,6 +73,9 @@ export interface APIModelOutputs {
   };
   "posts/[id]/comments:POST": {
     comment: CommentType;
+  };
+  "posts/[id]/save:POST": {
+    saved: boolean;
   };
   "posts/[id]/vote:POST": {
     vote: number;

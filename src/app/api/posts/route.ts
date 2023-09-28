@@ -9,6 +9,8 @@ import { prisma } from "~/lib/db";
 
 export async function GET(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+
     const url = new URL(req.url);
     const { after, subreddit, take } = APIModelInputs["posts:GET"].parse({
       after: url.searchParams.get("after"),
@@ -25,6 +27,7 @@ export async function GET(req: Request) {
       include: {
         author: true,
         comments: true,
+        saves: true,
         subreddit: true,
         votes: true,
       },
@@ -40,7 +43,17 @@ export async function GET(req: Request) {
       nextCursor = id;
     }
 
-    return new NextResponse(JSON.stringify({ nextCursor, posts }));
+    return new NextResponse(
+      JSON.stringify({
+        nextCursor,
+        posts: posts.map((post) => ({
+          post,
+          saved: session
+            ? post.saves.map((save) => save.userId).includes(session.user.id)
+            : false,
+        })),
+      }),
+    );
   } catch (error) {
     if (error instanceof z.ZodError)
       return new NextResponse(JSON.stringify(error.issues), { status: 422 });

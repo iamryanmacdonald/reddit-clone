@@ -101,9 +101,11 @@ export default async function RootLayout({
                       <Button variant="ghost" asChild>
                         <Link href="/">Home</Link>
                       </Button>
-
                       <Button variant="ghost" asChild>
                         <Link href="/all">All</Link>
+                      </Button>
+                      <Button variant="ghost" asChild>
+                        <Link href="/saved">Saved</Link>
                       </Button>
                     </>
                   ) : (

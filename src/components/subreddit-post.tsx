@@ -24,6 +24,7 @@ const formSchema = APIModelInputs["posts/[id]:PATCH"];
 
 interface SubredditPostProps {
   post: Post & { author: User; votes: PostVoteType[] };
+  saved: boolean;
   session: Session | null;
   vote: number;
   votes: number;
@@ -34,6 +35,7 @@ export default function SubredditPost(props: SubredditPostProps) {
 
   const [content, setContent] = useState(post.content);
   const [edit, setEdit] = useState(false);
+  const [saved, setSaved] = useState(props.saved);
 
   const form = useForm<z.infer<typeof formSchema>>({
     defaultValues: {
@@ -57,6 +59,17 @@ export default function SubredditPost(props: SubredditPostProps) {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     mutate(values);
   };
+
+  const { isLoading: isLoadingSave, mutate: mutateSave } = useMutation({
+    mutationFn: async (
+      body: z.infer<(typeof APIModelInputs)["posts/[id]/save:POST"]>,
+    ) => {
+      const res = await axios.post(`/api/posts/${post.id}/save`, body);
+
+      return res.data as APIModelOutputs["posts/[id]/save:POST"];
+    },
+    onSuccess: ({ saved }) => setSaved(saved),
+  });
 
   return (
     <div className="flex flex-col border border-accent bg-muted">
@@ -109,7 +122,7 @@ export default function SubredditPost(props: SubredditPostProps) {
               <p className="my-2">{content}</p>
             )}
           </div>
-          <div className="flex">
+          <div className="flex gap-4">
             {session?.user.id === post.authorId && post.content && (
               <span
                 className="text-sm opacity-75 hover:cursor-pointer"
@@ -118,6 +131,14 @@ export default function SubredditPost(props: SubredditPostProps) {
                 edit
               </span>
             )}
+            <span
+              className={`text-sm opacity-75 hover:cursor-pointer ${
+                isLoadingSave ? "opacity-25" : "opacity-75"
+              }`}
+              onClick={() => !isLoadingSave && mutateSave({ save: !saved })}
+            >
+              {saved ? "unsave" : "save"}
+            </span>
           </div>
         </div>
       </div>

@@ -1,12 +1,19 @@
+import { useState } from "react";
 import Link from "next/link";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { z } from "zod";
 
 import PostVote from "~/components/post-vote";
+import { Button } from "~/components/ui/button";
+import { APIModelInputs, APIModelOutputs } from "~/lib/api-models";
 import { VoteType } from "~/lib/types";
 import { CompletePost } from "~/lib/validators";
 
 interface PostProps {
   loggedIn: boolean;
   post: CompletePost;
+  saved: boolean;
   username: string;
   vote: number;
   votes: number;
@@ -14,6 +21,21 @@ interface PostProps {
 
 export default function Post(props: PostProps) {
   const { loggedIn, post, username, vote, votes } = props;
+
+  const [saved, setSaved] = useState(props.saved);
+
+  const { isLoading, mutate } = useMutation({
+    mutationFn: async (
+      body: z.infer<(typeof APIModelInputs)["posts/[id]/save:POST"]>,
+    ) => {
+      const res = await axios.post(`/api/posts/${post.id}/save`, body);
+
+      return res.data as APIModelOutputs["posts/[id]/save:POST"];
+    },
+    onSuccess: ({ saved }) => {
+      setSaved(saved);
+    },
+  });
 
   return (
     <div className="mb-2 rounded-md border px-4">
@@ -39,8 +61,15 @@ export default function Post(props: PostProps) {
                 {post.comments.length} comments
               </div>
             </Link>
-            <div className="rounded-md px-2 py-1 hover:cursor-pointer hover:bg-secondary">
-              save
+            <div
+              className={`rounded-md px-2 py-1 hover:cursor-pointer ${
+                isLoading
+                  ? "bg-muted opacity-50 hover:bg-muted"
+                  : "hover:bg-secondary"
+              }`}
+              onClick={() => !isLoading && mutate({ save: !saved })}
+            >
+              {saved ? "unsave" : "save"}
             </div>
           </div>
         </div>

@@ -24,6 +24,7 @@ export default async function Page(props: PageProps) {
   const post = await prisma.post.findUnique({
     include: {
       author: true,
+      saves: true,
       votes: true,
     },
     where: {
@@ -69,7 +70,17 @@ export default async function Page(props: PageProps) {
 
   return (
     <div className="flex w-full flex-col">
-      <SubredditPost post={post} session={session} vote={vote} votes={votes} />
+      <SubredditPost
+        post={post}
+        saved={
+          session
+            ? post.saves.map((save) => save.userId).includes(session.user.id)
+            : false
+        }
+        session={session}
+        vote={vote}
+        votes={votes}
+      />
       <span className="ml-2 mt-2 text-muted-foreground">
         {comments.length > 0
           ? `all ${comments.length} comments`
